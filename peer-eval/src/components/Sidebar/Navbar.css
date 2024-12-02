@@ -1,0 +1,49 @@
+/* Navbar styles */
+.navbar {
+    background-color: white;
+    color: black;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 60px;
+}
+
+.navbar-content {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.username {
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+}
+
+.logout-button {
+    background: none;
+    border: none;
+    color: black;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.logout-button:hover {
+    color: #ff4d4d; 
+}
+
+.logout-button:focus {
+    outline: none;
+}
+
+.logout-button svg {
+    font-size: 20px;
+}
