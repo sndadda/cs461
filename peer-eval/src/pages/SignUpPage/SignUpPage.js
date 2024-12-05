@@ -3,6 +3,7 @@ import './SignUpPage.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+
 const SignUp = ({ setUser }) => {
     const [formData, setFormData] = useState({
         firstName: '',
@@ -27,16 +28,14 @@ const SignUp = ({ setUser }) => {
         try {
             const signupResponse = await axios.post('http://localhost:5000/api/signup', formData);
             if (signupResponse.data.success) {
-                const user = signupResponse.data.user; 
-
-                localStorage.setItem('user', JSON.stringify(user)); 
+                const user = signupResponse.data.user;
+                localStorage.setItem('user', JSON.stringify(user));
                 setUser(user); // set user state immediately to make them logged in
 
-
                 if (user.role === 'student') {
-                    navigate('/studentReport'); 
+                    navigate('/studentReport');
                 } else if (user.role === 'professor') {
-                    navigate('/professorReport'); 
+                    navigate('/professorReport');
                 }
             } else {
                 setErrorMessage(signupResponse.data.message || 'Signup failed.');
@@ -49,6 +48,10 @@ const SignUp = ({ setUser }) => {
 
     return (
         <div className="signUpContainer">
+            <button className="backButton" onClick={() => navigate('/')}>
+                &lt; 
+            </button>
+            
             <h2>Sign Up</h2>
             <form onSubmit={handleSubmit}>
                 <label>

@@ -43,7 +43,7 @@
     text-decoration: none;
     color: white;
     width: 80%;
-    max-width: 300px;
+    max-width: 200px;
 }
 
 .button.signup {
@@ -95,10 +95,10 @@
     box-sizing: border-box;
 }
 
-.loginForm button {
+.loginbutton {
     width: 100%;
-    padding: 10px;
-    background-color: #F28482;
+    padding: 15px;
+    background-color: #052c4c;
     color: white;
     font-weight: bold;
     border: none;
@@ -107,25 +107,30 @@
     transition: background-color 0.3s ease;
 }
 
-.loginForm button:hover {
-    background-color: #C65C5C;
+.loginbutton hover{
+    background-color: #031b2e;
 }
 
-.backButton {
-    margin-top: 15px;
-    padding: 10px 15px;
-    background-color: #ccc;
-    color: black;
-    font-weight: bold;
+.backIcon {
+    position: absolute;
+    top: 20px; 
+    left: 20px; 
+    background: none;
     border: none;
-    border-radius: 5px;
+    font-size: 24px; 
+    color: #052c4c; 
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    z-index: 10; 
+    transition: color 0.3s ease; 
 }
 
-.backButton:hover {
-    background-color: #bbb;
+.backIcon:hover {
+    color: #02192b; 
 }
+
+
+
+
 
 .error {
     color: #FF0000;
