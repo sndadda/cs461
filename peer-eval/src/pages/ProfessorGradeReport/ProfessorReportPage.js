@@ -12,6 +12,10 @@ function ProfessorReport() {
             <div class="course">
                 <h3>Select Course:</h3>
             </div>
+
+            <div class="report">
+                <p></p>
+            </div>
         </div>
     )
 }
