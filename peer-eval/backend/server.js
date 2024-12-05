@@ -72,8 +72,6 @@ app.get('/', (req, res) => {
 
 
 
-
-
 app.post('/api/signup', async (req, res) => {
     const { firstName, lastName, email, password, role } = req.body;
 
@@ -150,7 +148,7 @@ app.post('/api/login', async (req, res) => {
               id: user.id, 
               username: user.username, 
               role: user.final_role,
-              firstName: user.first_name, // Include first name
+              firstName: user.first_name, 
           },
       });
   } catch (error) {
@@ -164,7 +162,7 @@ app.post('/api/login', async (req, res) => {
 
 
 app.post('/api/logout', (req, res) => {
-  res.clearCookie('userId'); // Clear the cookie used for authentication
+  res.clearCookie('userId'); 
   res.json({ success: true, message: 'Logged out successfully' });
 });
 

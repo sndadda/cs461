@@ -79,10 +79,10 @@ function LoginPage({ setUser }) {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
-                        <button type="submit">Log In</button>
+                        <button type="submit" className="loginbutton">Log In</button>
                         {errorMessage && <p className="error">{errorMessage}</p>}
                     </form>
-                    <button className="backButton" onClick={goBack}>Go Back</button>
+                    <button className="backIcon" onClick={goBack}>&lt;</button>
                 </div>
             )}
         </div>

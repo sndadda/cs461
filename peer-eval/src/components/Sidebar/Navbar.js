@@ -1,27 +1,27 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Navbar.css'; 
-import { FaSignOutAlt } from 'react-icons/fa'; 
+import { Link } from 'react-router-dom';
+import { FaSignOutAlt } from 'react-icons/fa';
+import './Navbar.css';
 
-const Navbar = ({ onLogout }) => {
-    const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem('user')); 
-
-    const handleLogout = () => {
-        localStorage.removeItem('user'); 
-        onLogout(); 
-        navigate('/'); 
-    };
-
+const Navbar = ({ user, onLogout }) => {
     return (
         <nav className="navbar">
-            <div className="navbar-content">
-                <div className="navbar-user">
-                    <span className="username">{user?.firstName || "User"}</span>
-                    <button className="logout-button" onClick={handleLogout} title="Logout">
-                        <FaSignOutAlt />
-                    </button>
-                </div>
+            <div className="navbar-links">
+                {user?.role === 'student' && (
+                    <>
+                        <Link to="/studentReport" className="nav-item">Report</Link>
+                        <Link to="/studentSurvey" className="nav-item">Survey</Link>
+                    </>
+                )}
+                {user?.role === 'professor' && (
+                    <Link to="/professorReport" className="nav-item">Report</Link>
+                )}
+            </div>
+            <div className="navbar-user">
+                <span className="username">{user?.firstName || 'User'}</span>
+                <button className="logout-button" onClick={onLogout} title="Logout">
+                    <FaSignOutAlt />
+                </button>
             </div>
         </nav>
     );
