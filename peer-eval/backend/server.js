@@ -166,8 +166,25 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
+app.get('/api/professorReport/:courseNum', async (req, res) => {
+  const { courseNum } = req.params;
 
+  try {
+    const result = await pool.query(
+      'SELECT course_num, course_term, course_year FROM COURSE WHERE course_num = $1',
+      [courseNum]
+    );
 
+    if (result.rows.length === 0) {
+      console.log("No courses found");
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching course information", error.message);
+    res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
+  }
+});
 
 app.listen(port, hostname, () => {
   console.log(`Server is running on http://${hostname}:${port}`);

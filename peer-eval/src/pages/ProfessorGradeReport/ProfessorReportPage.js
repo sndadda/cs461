@@ -9,7 +9,9 @@ function ProfessorReport() {
 
     return (
         <div>
-            <h2>hi prof</h2>
+            <div class="course">
+                <h3>Select Course:</h3>
+            </div>
         </div>
     )
 }
