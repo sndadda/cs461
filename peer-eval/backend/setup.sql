@@ -53,10 +53,10 @@ CREATE TABLE IF NOT EXISTS Default_Form (
     form_id SERIAL PRIMARY KEY,
     course_num  VARCHAR(5),
     survey_name VARCHAR(128),
-    question1   VARCHAR(255) DEFAULT 'Rate on tardiness',
-    question2   VARCHAR(255) DEFAULT 'Rate on teamwork',
-    question3   VARCHAR(255) DEFAULT 'Rate on project participation',
-    eval_par    VARCHAR(255) DEFAULT 'Add any comments about the user',
+    question1   VARCHAR(255) DEFAULT 'Rate how they contribute to Team Meetings.',
+    question2   VARCHAR(255) DEFAULT 'Rate how they facilitate the Contributions of Team Members.',
+    question3   VARCHAR(255) DEFAULT 'Rate how they make Individual Contributions outside of Team Meetings.',
+    eval_par    VARCHAR(255) DEFAULT 'Add any additional comments about the team member.',
     FOREIGN KEY (course_num) REFERENCES Course (course_num)
 );
 

@@ -5,6 +5,7 @@ import SignUp from './pages/SignUpPage/SignUpPage.js';
 import StudentReport from './pages/StudentReport/StudentReportPage.js';
 import ProfessorReport from './pages/ProfessorGradeReport/ProfessorReportPage.js';
 import ProtectedRoute from './PrivateRoute.js';
+import ProfessorCourses from './pages/ProfessorCourses/ProfessorCoursesPage.js';
 import Navbar from './components/Sidebar/Navbar.js';
 import StudentSurvey from './pages/StudentSurvey/StudentSurveyPage.js';
 
@@ -58,6 +59,16 @@ export const AppRoutes = () => {
                             <ProtectedRoute
                                 component={StudentSurvey}
                                 allowedRoles={['student']}
+                                user={user}
+                            />
+                        }
+                    />
+                    <Route
+                        path="/professorCourses"
+                        element={
+                            <ProtectedRoute
+                                component={ProfessorCourses}
+                                allowedRoles={'professor'}
                                 user={user}
                             />
                         }

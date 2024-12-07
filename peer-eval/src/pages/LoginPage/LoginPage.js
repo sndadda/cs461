@@ -37,7 +37,7 @@ function LoginPage({ setUser }) {
             if (response.data.success) {
                 const user = response.data.user;
                 localStorage.setItem('user', JSON.stringify(user));
-                setUser(user); // Update user state
+                setUser(user); 
                 navigate(user.role === 'student' ? '/studentReport' : '/professorReport');
             } else {
                 setErrorMessage(response.data.message || 'An error occurred. Please try again.');

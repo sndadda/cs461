@@ -46,26 +46,8 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 
-
 const port = 5000;
 const hostname = 'localhost';
-
-const isAuthenticated = (req, res, next) => {
-  const user = req.body.user; 
-  if (!user) {
-      return res.status(401).json({ success: false, message: 'You must log in first.' });
-  }
-  req.user = user; 
-  next();
-};
-
-const authorizeRole = (allowedRoles) => (req, res, next) => {
-  const user = req.user;
-  if (!allowedRoles.includes(user.role)) {
-      return res.status(403).json({ success: false, message: 'Access denied.' });
-  }
-  next();
-};
 
 const verifyAuthentication = async (req, res, next) => {
   const userId = req.cookies.userId; 
@@ -98,23 +80,90 @@ app.get('/api/protected', verifyAuthentication, (req, res) => {
 });
 
 app.get('/api/enrolled-courses', verifyAuthentication, async (req, res) => {
-  const studentId = req.user.id; 
+  const userId = req.user.id;
+  const role = req.user.final_role;
+
+  try {
+    let query;
+    let params;
+
+    if (role === 'student') {
+      query = `
+        SELECT c.course_num, c.course_name, c.course_term, c.course_year
+        FROM Enrollment e
+        JOIN Course c ON e.course_num = c.course_num
+        WHERE e.stud_id = $1
+      `;
+      params = [userId];
+    } else if (role === 'professor') {
+      query = `
+        SELECT c.course_num, c.course_name, c.course_term, c.course_year
+        FROM Course c
+        WHERE c.prof_id = $1
+      `;
+      params = [userId];
+    } else {
+      return res.status(403).json({ success: false, message: 'Unauthorized role' });
+    }
+
+    const result = await pool.query(query, params);
+    res.json({ success: true, courses: result.rows });
+  } catch (error) {
+    console.error('Error fetching enrolled courses:', error.message);
+    res.status(500).json({ success: false, message: 'Error fetching courses.' });
+  }
+});
+
+
+app.get('/api/surveys/:course_num', verifyAuthentication, async (req, res) => {
+  const { course_num } = req.params;
 
   try {
       const query = `
-          SELECT c.course_num, c.course_name, c.course_term, c.course_year
-          FROM Enrollment e
-          JOIN Course c ON e.course_num = c.course_num
-          WHERE e.stud_id = $1
+          SELECT form_id, survey_name
+          FROM Default_Form
+          WHERE course_num = $1
       `;
-      const result = await pool.query(query, [studentId]);
+      const result = await pool.query(query, [course_num]);
 
-      res.json({ success: true, courses: result.rows });
+      res.json({ success: true, surveys: result.rows });
   } catch (error) {
-      console.error('Error fetching enrolled courses:', error.message);
-      res.status(500).json({ success: false, message: 'Error fetching courses.' });
+      console.error('Error fetching surveys:', error.message);
+      res.status(500).json({ success: false, message: 'Error fetching surveys.' });
   }
 });
+
+app.get('/api/survey-questions/:survey_id', verifyAuthentication, async (req, res) => {
+  const { survey_id } = req.params;
+
+  try {
+    const query = `
+      SELECT survey_name, question1, question2, question3, eval_par
+      FROM Default_Form
+      WHERE form_id = $1
+    `;
+    const result = await pool.query(query, [survey_id]);
+
+    if (result.rowCount > 0) {
+      const survey = result.rows[0];
+      res.json({
+        success: true,
+        survey: {
+          survey_name: survey.survey_name,
+          questions: [survey.question1, survey.question2, survey.question3],
+          eval_par: survey.eval_par,
+        },
+      });
+    } else {
+      res.status(404).json({ success: false, message: 'Survey not found.' });
+    }
+  } catch (error) {
+    console.error('Error fetching survey questions:', error.message);
+    res.status(500).json({ success: false, message: 'Error fetching survey questions.' });
+  }
+});
+
+
 
 
 
@@ -195,7 +244,6 @@ app.post('/api/login', async (req, res) => {
           return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
-      // Send user ID in a cookie
       res.cookie('userId', user.id, { httpOnly: true, sameSite: 'strict' });
 
       res.json({
