@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import fs from 'fs';
+import fs, { appendFile } from 'fs';
 import bcrypt from 'bcrypt';
 import pkg from 'pg'; 
+import cookieParser from 'cookie-parser';
 const { Pool } = pkg; 
 
 
@@ -42,6 +43,7 @@ app.use(cors({
   credentials: true, 
 }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 
 
@@ -65,10 +67,62 @@ const authorizeRole = (allowedRoles) => (req, res, next) => {
   next();
 };
 
+const verifyAuthentication = async (req, res, next) => {
+  const userId = req.cookies.userId; 
+  if (!userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized access.' });
+  }
+
+  try {
+      const userQuery = `
+          SELECT id, username, final_role
+          FROM Portal_User
+          WHERE id = $1
+      `;
+      const userResult = await pool.query(userQuery, [userId]);
+
+      if (userResult.rowCount === 0) {
+          return res.status(401).json({ success: false, message: 'Invalid user session.' });
+      }
+
+      req.user = userResult.rows[0]; 
+      next();
+  } catch (error) {
+      console.error('Error verifying authentication:', error.message);
+      res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+app.get('/api/protected', verifyAuthentication, (req, res) => {
+  res.json({ success: true, message: `Welcome, ${req.user.username}` });
+});
+
+app.get('/api/enrolled-courses', verifyAuthentication, async (req, res) => {
+  const studentId = req.user.id; 
+
+  try {
+      const query = `
+          SELECT c.course_num, c.course_name, c.course_term, c.course_year
+          FROM Enrollment e
+          JOIN Course c ON e.course_num = c.course_num
+          WHERE e.stud_id = $1
+      `;
+      const result = await pool.query(query, [studentId]);
+
+      res.json({ success: true, courses: result.rows });
+  } catch (error) {
+      console.error('Error fetching enrolled courses:', error.message);
+      res.status(500).json({ success: false, message: 'Error fetching courses.' });
+  }
+});
+
+
+
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to peer evaluation application' });
 });
+
 
 
 
@@ -141,14 +195,17 @@ app.post('/api/login', async (req, res) => {
           return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
+      // Send user ID in a cookie
+      res.cookie('userId', user.id, { httpOnly: true, sameSite: 'strict' });
+
       res.json({
           success: true,
           message: 'Login successful',
-          user: { 
-              id: user.id, 
-              username: user.username, 
+          user: {
+              id: user.id,
+              username: user.username,
               role: user.final_role,
-              firstName: user.first_name, 
+              firstName: user.first_name,
           },
       });
   } catch (error) {
@@ -156,6 +213,30 @@ app.post('/api/login', async (req, res) => {
       res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 });
+
+app.post('/api/create-survey', verifyAuthentication, async (req, res) => {
+  const { course_num, survey_name } = req.body;
+
+  if (!course_num || !survey_name) {  
+    return res.status(400).json({ success: false, message: 'Course number and survey name are required.' });
+  }
+
+  try {
+    const query = 'INSERT INTO Default_Form (course_num, survey_name) VALUES ($1, $2) RETURNING form_id';
+    const values = [course_num, survey_name];  
+    const result = await pool.query(query, values); 
+
+    if (result.rows.length > 0) {
+      res.json({ success: true, form_id: result.rows[0].form_id });
+    } else {
+      res.status(500).json({ success: false, message: 'Failed to create survey.' });
+    }
+  } catch (error) {
+    console.error('Error creating survey:', error);
+    res.status(500).json({ success: false, message: 'Server error while creating survey.' });
+  }
+});
+
 
 
 

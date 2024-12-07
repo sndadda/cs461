@@ -26,23 +26,19 @@ function LoginPage({ setUser }) {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
+    
         try {
             const response = await axios.post(
                 'http://localhost:5000/api/login',
                 { email, password },
                 { withCredentials: true }
             );
-
+    
             if (response.data.success) {
                 const user = response.data.user;
-                localStorage.setItem('user', JSON.stringify(user)); 
-                setUser(user); 
-                if (user.role === 'student') {
-                    navigate('/studentReport');
-                } else if (user.role === 'professor') {
-                    navigate('/professorReport');
-                }
+                localStorage.setItem('user', JSON.stringify(user));
+                setUser(user); // Update user state
+                navigate(user.role === 'student' ? '/studentReport' : '/professorReport');
             } else {
                 setErrorMessage(response.data.message || 'An error occurred. Please try again.');
             }
@@ -50,6 +46,7 @@ function LoginPage({ setUser }) {
             setErrorMessage(error.response?.data?.message || 'An error occurred. Please try again.');
         }
     };
+    
 
     return (
         <div className="loginContainer">
