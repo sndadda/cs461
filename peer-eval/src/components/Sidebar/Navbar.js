@@ -14,7 +14,10 @@ const Navbar = ({ user, onLogout }) => {
                     </>
                 )}
                 {user?.role === 'professor' && (
-                    <Link to="/professorReport" className="nav-item">Report</Link>
+                    <>
+                        <Link to="/professorReport" className="nav-item">Report</Link>
+                        <Link to="/professorCourses" className="nav-item">Course Creation</Link>
+                    </>
                 )}
             </div>
             <div className="navbar-user">
