@@ -35,15 +35,31 @@ CREATE TABLE IF NOT EXISTS Course (
 CREATE TABLE IF NOT EXISTS Evaluation_Table (
     evaluator_id        INT,
     person_evaluated    INT,
-    rating              INT,
+    form_id             INT,
+    rating1              INT,
+    rating2             INT,
+    rating3             INT,
     course_num          VARCHAR(5),
     eval_par            TEXT,
     PRIMARY KEY (evaluator_id, person_evaluated),
     FOREIGN KEY (evaluator_id) REFERENCES Student (stud_id),
     FOREIGN KEY (person_evaluated) REFERENCES Student (stud_id),
+    FOREIGN KEY (form_id) REFERENCES Default_Form (form_id),
     FOREIGN KEY (course_num) REFERENCES Course (course_num),
-    CHECK (rating < 5)
+    CHECK (rating1 < 5 AND rating2 < 5 AND rating3 < 5)
 );
+
+CREATE TABLE IF NOT EXISTS Default_Form (
+    form_id SERIAL PRIMARY KEY,
+    course_num  VARCHAR(5),
+    survey_name VARCHAR(128),
+    question1   VARCHAR(255) DEFAULT 'Rate how they contribute to Team Meetings.',
+    question2   VARCHAR(255) DEFAULT 'Rate how they facilitate the Contributions of Team Members.',
+    question3   VARCHAR(255) DEFAULT 'Rate how they make Individual Contributions outside of Team Meetings.',
+    eval_par    VARCHAR(255) DEFAULT 'Add any additional comments about the team member.',
+    FOREIGN KEY (course_num) REFERENCES Course (course_num)
+);
+
 
 CREATE TABLE IF NOT EXISTS Project (
     proj_id     INT PRIMARY KEY,
