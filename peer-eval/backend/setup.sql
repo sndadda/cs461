@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS Professor (
 CREATE TYPE term AS ENUM ('Fall', 'Winter', 'Spring', 'Summer');
 
 CREATE TABLE IF NOT EXISTS Course (
-    course_num  VARCHAR(5) PRIMARY KEY,
+    course_num  VARCHAR(10) PRIMARY KEY,
     course_name VARCHAR(128),
     course_term term,
     course_year CHAR(4),
@@ -32,22 +32,37 @@ CREATE TABLE IF NOT EXISTS Course (
     FOREIGN KEY (prof_id) REFERENCES Professor (prof_id)
 );
 
+CREATE TABLE IF NOT EXISTS Default_Form (
+    form_id SERIAL PRIMARY KEY,
+    course_num  VARCHAR(10),
+    survey_name VARCHAR(128),
+    question1   VARCHAR(255) DEFAULT 'Rate how they contribute to Team Meetings.',
+    question2   VARCHAR(255) DEFAULT 'Rate how they facilitate the Contributions of Team Members.',
+    question3   VARCHAR(255) DEFAULT 'Rate how they make Individual Contributions outside of Team Meetings.',
+    eval_par    VARCHAR(255) DEFAULT 'Add any additional comments about the team member.',
+    FOREIGN KEY (course_num) REFERENCES Course (course_num)
+);
+
 CREATE TABLE IF NOT EXISTS Evaluation_Table (
     evaluator_id        INT,
     person_evaluated    INT,
-    rating              INT,
-    course_num          VARCHAR(5),
+    form_id             INT,
+    rating1              INT,
+    rating2             INT,
+    rating3             INT,
+    course_num          VARCHAR(10),
     eval_par            TEXT,
     PRIMARY KEY (evaluator_id, person_evaluated),
     FOREIGN KEY (evaluator_id) REFERENCES Student (stud_id),
     FOREIGN KEY (person_evaluated) REFERENCES Student (stud_id),
+    FOREIGN KEY (form_id) REFERENCES Default_Form (form_id),
     FOREIGN KEY (course_num) REFERENCES Course (course_num),
-    CHECK (rating < 5)
+    CHECK (rating1 < 5 AND rating2 < 5 AND rating3 < 5)
 );
 
 CREATE TABLE IF NOT EXISTS Project (
     proj_id     INT PRIMARY KEY,
-    course_num  VARCHAR(5),
+    course_num  VARCHAR(10),
     proj_name   VARCHAR(32),
     FOREIGN KEY (course_num) REFERENCES Course (course_num)
 );
@@ -62,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Teammates (
 
 CREATE TABLE IF NOT EXISTS Grades (
     prof_id     INT,
-    course_num  VARCHAR(5),
+    course_num  VARCHAR(10),
     stud_id     INT,
     grade       INT,
     PRIMARY KEY (prof_id, course_num, stud_id),
@@ -73,22 +88,9 @@ CREATE TABLE IF NOT EXISTS Grades (
 );
 
 CREATE TABLE IF NOT EXISTS Enrollment (
-    course_num  VARCHAR(5),
+    course_num  VARCHAR(10),
     stud_id     INT,
     PRIMARY KEY (course_num, stud_id),
     FOREIGN KEY (course_num) REFERENCES Course (course_num),
     FOREIGN KEY (stud_id) REFERENCES Student (stud_id)
 );
-
-
-DELETE FROM Teammates;
-DELETE FROM Grades;
-DELETE FROM Enrollment;
-DELETE FROM Evaluation_Table;
-DELETE FROM Project;
-
-
-DELETE FROM Student;
-DELETE FROM Professor;
-DELETE FROM Portal_User;
-
