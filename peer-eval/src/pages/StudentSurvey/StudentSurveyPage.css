@@ -22,9 +22,23 @@
     text-align: left; 
 }
 
+.question-container label {
+  display: block;
+  margin-bottom: 5px;
+}
+
 .radio-buttons {
     margin-top: 5px;
     display: block; 
+}
+
+.question-container textarea {
+  width: 85%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  resize: vertical;
 }
 
 .radio-buttons label {
@@ -35,6 +49,9 @@
     margin-right: 15px; 
 }
 
+.radio-buttons label span {
+  padding-left: 20px;
+}
 
 input[type="radio"] {
     margin-right: 5px; 
@@ -42,6 +59,10 @@ input[type="radio"] {
     vertical-align: middle; 
 }
 
+.button-container {
+  text-align: center;
+  margin: 20px;
+}
 button {
     background-color: #007BFF;
     color: white;

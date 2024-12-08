@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './StudentSurveyPage.css';
 
 function StudentSurvey() {
@@ -13,6 +14,7 @@ function StudentSurvey() {
   const [teammates, setTeammates] = useState([]);
   const [nextClicked, setNextClicked] = useState(false);
   const [evalText, setEvalText] = useState('');
+  const [ratings, setRatings] = useState([]);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -42,6 +44,27 @@ function StudentSurvey() {
 
     fetchCourses();
   }, []);
+
+  const fetchTeammates = async (project) => {
+    try {
+      const teammateResponse = await fetch(
+        `http://localhost:5000/api/teammates/${project}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (teammateResponse.ok) {
+        const teammateData = await teammateResponse.json();
+        setTeammates(teammateData.teammates || []);
+      } else {
+        console.error('Failed to fetch teammates for the selected project.');
+      }
+    } catch (error) {
+      console.error('Error in fetching group members:', error);
+    }
+  };
 
   const handleCourseChange = async (event) => {
     const course = event.target.value;
@@ -96,24 +119,7 @@ function StudentSurvey() {
     setSelectedTeammate('');
     setTeammates(null);
 
-    try {
-      const teammateResponse = await fetch(
-        `http://localhost:5000/api/teammates/${project}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-
-      if (teammateResponse.ok) {
-        const teammateData = await teammateResponse.json();
-        setTeammates(teammateData.teammates || []);
-      } else {
-        console.error('Failed to fetch teammates for the selected project.');
-      }
-    } catch (error) {
-      console.error('Error in fetching group members, etc:', error);
-    }
+    await fetchTeammates(project);
   };
 
   const handleMateChange = async (event) => {
@@ -127,7 +133,6 @@ function StudentSurvey() {
       return;
     }
 
-    // Fetch survey questions
     try {
       const response = await fetch(
         `http://localhost:5000/api/survey-questions/${selectedSurvey}`,
@@ -143,7 +148,7 @@ function StudentSurvey() {
           ...data.survey,
           questions: data.survey.questions.map((question) =>
             selectedTeammate
-              ? question.replace('they', selectedTeammate.first_name)
+              ? question.replace('{member}', selectedTeammate.first_name)
               : question
           ),
         };
@@ -161,35 +166,23 @@ function StudentSurvey() {
     setEvalText(event.target.value);
   };
 
-  const saveEvaluation = async () => {
-    let totalRating = 0;
-    const responses = surveyDetails.questions.map((_, index) => {
-      const selectedOption = document.querySelector(
-        `input[name="question${index}"]:checked`
-      );
-      if (!selectedOption) {
-        return null;
-      }
-      totalRating += parseInt(selectedOption.value, 10);
-      return parseInt(selectedOption.value, 10);
-    });
+  const handleRadioChange = (index, value) => {
+    const newRatings = [...ratings];
+    newRatings[index] = Number(value);
+    setRatings(newRatings);
+  };
 
-    if (responses.includes(null)) {
-      alert('Please answer all questions!');
-      return;
-    }
+  const saveEvaluation = async (event) => {
+    event.preventDefault();
 
-    const submissionData = {
+    const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+
+    const evaluationData = {
       person_evaluated: selectedTeammate.stud_id,
       rating: totalRating,
       course_num: selectedCourse,
       eval_par: evalText,
     };
-
-    if (submissionData.rating >= 5) {
-      alert('The total rating must be less than 5.');
-      return;
-    }
 
     try {
       const response = await fetch(
@@ -200,30 +193,27 @@ function StudentSurvey() {
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify(submissionData),
+          body: JSON.stringify(evaluationData),
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to submit evaluation');
-      }
-
-      const data = await response.json();
-      if (data.success) {
+      const result = await response.json();
+      if (result.success) {
         alert('Evaluation submitted successfully!');
         setNextClicked(false);
         setSurveyDetails(null);
         setSelectedSurvey('');
+        setSelectedTeammate('');
+        setRatings([]);
         setEvalText('');
+        setTeammates([]);
+        await fetchTeammates(selectedProject);
       } else {
-        console.error('Evaluation submission failed:', data.message);
-        alert('Failed to submit the evaluation. Please try again.');
+        alert(result.message);
       }
     } catch (error) {
-      console.error('Error during evaluation submission:', error);
-      alert(
-        'An error occurred while submitting the evaluation. Please try again.'
-      );
+      console.error('Error submitting evaluation:', error);
+      alert('An error occurred. Please try again.');
     }
   };
 
@@ -243,7 +233,7 @@ function StudentSurvey() {
               <option value="" disabled>
                 Select a course
               </option>
-              {courses.map((course) => (
+              {(courses || []).map((course) => (
                 <option key={course.course_num} value={course.course_num}>
                   {course.course_name} ({course.course_term}{' '}
                   {course.course_year})
@@ -253,16 +243,16 @@ function StudentSurvey() {
           </div>
 
           <div className="dropdown-container">
-            <label htmlFor="courseDropdown">Select Class Project:</label>
+            <label htmlFor="projectDropdown">Select Class Project:</label>
             <select
-              id="courseDropdown"
+              id="projectDropdown"
               value={selectedProject}
               onChange={handleProjectChange}
             >
               <option value="" disabled>
                 Select class project
               </option>
-              {projects.map((project) => (
+              {(projects || []).map((project) => (
                 <option key={project.proj_id} value={project.proj_id}>
                   {project.proj_name}
                 </option>
@@ -271,64 +261,78 @@ function StudentSurvey() {
           </div>
 
           {selectedProject && (
-            <div className="dropdown-container">
-              <label htmlFor="projectsDropdown">Select a Survey:</label>
-              <select
-                id="surveyDropdown"
-                value={selectedSurvey}
-                onChange={handleSurveyChange}
-              >
-                <option value="" disabled>
-                  Select a survey
-                </option>
-                {surveys.map((survey) => (
-                  <option key={survey.form_id} value={survey.form_id}>
-                    {survey.survey_name}
+            <>
+              <div className="dropdown-container">
+                <label htmlFor="surveyDropdown">Select a Survey:</label>
+                <select
+                  id="surveyDropdown"
+                  value={selectedSurvey}
+                  onChange={handleSurveyChange}
+                >
+                  <option value="" disabled>
+                    Select a survey
                   </option>
-                ))}
-              </select>
-            </div>
-          )}
+                  {(surveys || []).map((survey) => (
+                    <option key={survey.form_id} value={survey.form_id}>
+                      {survey.survey_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {selectedSurvey && (
-            <div className="dropdown-container">
-              <label htmlFor="surveyDropdown">
-                Choose a teammate to evaluate:
-              </label>
-              <select
-                id="surveyDropdown"
-                value={selectedTeammate}
-                onChange={handleMateChange}
-              >
-                <option value="" disabled>
-                  Select a teammate
-                </option>
-                {teammates.map((teammate) => (
-                  <option
-                    key={teammate.stud_id}
-                    value={JSON.stringify({
-                      stud_id: teammate.stud_id,
-                      first_name: teammate.first_name,
-                    })}
-                  >
-                    {teammate.first_name} {teammate.last_name}
+              <div className="dropdown-container">
+                <label htmlFor="teammateDropdown">
+                  Choose a teammate to evaluate:
+                </label>
+                <select
+                  id="teammateDropdown"
+                  value={
+                    selectedTeammate ? JSON.stringify(selectedTeammate) : ''
+                  }
+                  onChange={handleMateChange}
+                >
+                  <option value="" disabled>
+                    Select a teammate
                   </option>
-                ))}
-              </select>
-            </div>
+                  {(teammates || []).map((teammate) => (
+                    <option
+                      key={teammate.stud_id}
+                      value={JSON.stringify({
+                        stud_id: teammate.stud_id,
+                        first_name: teammate.first_name,
+                        last_name: teammate.last_name,
+                      })}
+                    >
+                      {teammate.first_name} {teammate.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
-
-          <button onClick={handleNext}>Next</button>
+          <div className="button-container">
+            <button onClick={handleNext}>Next</button>
+          </div>
 
           <div>
-            Students are required to complete the survey for all team members
-            and themselves. Your grade may be impacted by your survey, including
-            whether you complete it or not by the deadline. This survey is to
-            evaluate yourself and your teammates. Your responses may be shared
-            with faculty involved with your team. This evaluation may influence
-            individual grades, including your own. The following questions are
-            based on the Teamwork Value Rubric below, the rating scale is out of
-            5.
+            <p>
+              {' '}
+              Students are required to complete the survey for all team members
+              and themselves. Your grade may be impacted by your survey,
+              including whether you complete it or not by the deadline.<br></br>
+            </p>
+            <p>
+              {' '}
+              This survey is to evaluate yourself and your teammates. Your
+              responses may be shared with faculty involved with your team.
+              <br></br>
+            </p>
+            <p>
+              {' '}
+              This evaluation may influence individual grades, including your
+              own. The following questions are based on the Teamwork Value
+              Rubric below, the rating scale is out of 4.<br></br>
+            </p>
           </div>
         </>
       )}
@@ -347,8 +351,11 @@ function StudentSurvey() {
                         type="radio"
                         name={`question${index}`}
                         value={value}
+                        onChange={(e) =>
+                          handleRadioChange(index, e.target.value)
+                        }
                       />{' '}
-                      {value}
+                      <span>{value}</span>
                     </label>
                   ))}
                 </div>
@@ -364,7 +371,9 @@ function StudentSurvey() {
                 rows="4"
               />
             </div>
-            <button onClick={saveEvaluation}>Submit</button>
+            <div className="button-container">
+              <button onClick={saveEvaluation}>Submit</button>
+            </div>
           </form>
         </div>
       )}

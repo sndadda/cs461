@@ -338,16 +338,21 @@ app.get('/api/teammates/:proj_id', verifyAuthentication, async (req, res) => {
 
   try {
     const query = `
-      SELECT S.first_name, S.last_name
-      FROM Group_Members G
-      JOIN Student S ON G.stud_id = S.stud_id
-      WHERE G.proj_id = $1
-        AND G.team_id = (
-          SELECT team_id
-          FROM Group_Members
-          WHERE proj_id = $1 AND stud_id = $2
-        )
-        AND G.stud_id != $2;
+    SELECT S.stud_id, S.first_name, S.last_name
+    FROM Group_Members G
+    JOIN Student S ON G.stud_id = S.stud_id
+    WHERE G.proj_id = $1
+      AND G.team_id = (
+        SELECT team_id
+        FROM Group_Members
+        WHERE proj_id = $1 AND stud_id = $2
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM Evaluation_Table E
+        WHERE E.evaluator_id = $2
+          AND E.person_evaluated = G.stud_id
+      );
             `;
     const result = await pool.query(query, [proj_id, userId]);
     res.json({ success: true, teammates: result.rows });
@@ -359,7 +364,43 @@ app.get('/api/teammates/:proj_id', verifyAuthentication, async (req, res) => {
   }
 });
 
-app.post('/api/submit-evaluation', verifyAuthentication, (req, res) => {});
+app.post('/api/submit-evaluation', verifyAuthentication, async (req, res) => {
+  const userId = req.user.id;
+  const { person_evaluated, rating, course_num, eval_par } = req.body;
+
+  if (!person_evaluated || !rating || !course_num || !eval_par) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid evaluation.',
+    });
+  }
+
+  try {
+    const query =
+      'INSERT INTO Evaluation_Table (evaluator_id, person_evaluated, rating, course_num, eval_par) VALUES ($1, $2, $3, $4, $5) RETURNING evaluator_id, person_evaluated';
+    const values = [userId, person_evaluated, rating, course_num, eval_par];
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length > 0) {
+      res.json({
+        success: true,
+        evaluator_id: result.rows[0].evaluator_id,
+        person_evaluated: result.rows[0].person_evaluated,
+      });
+    } else {
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to save evaluation.' });
+    }
+  } catch (error) {
+    console.error('Error saving evaluation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while sumbmitting evaluation.',
+    });
+  }
+});
 
 app.post('/api/logout', (req, res) => {
   res.clearCookie('userId');
