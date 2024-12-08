@@ -4,22 +4,30 @@ import axios from 'axios';
 import rubric from '../../images/rubric_image.png';
 
 function StudentReport() {
-    const [reportData, setReportData] = useState(null);
+    const [evaluations, setEvaluations] = useState([]);
+    const [averageScore, setAverageScore] = useState(0);
+    const [totalEvaluations, setTotalEvaluations] = useState(0);
+    const [feedback, setFeedback] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Fetch student report data when the component mounts
         axios.get('http://localhost:5000/api/student-report', {
-            withCredentials: true
+            withCredentials: true,
         })
             .then((response) => {
-                setReportData(response.data);
+                const { evaluations, averageScore, feedback } = response.data;
+
+                // Update state with the received data
+                setEvaluations(evaluations);
+                setAverageScore(averageScore);
+                setTotalEvaluations(evaluations.length);
+                setFeedback(feedback);
                 setLoading(false);
             })
             .catch((err) => {
-                console.error('Error fetching student report:', err.response ? err.response.data : err.message);
-                setError(err.response ? err.response.data.message : 'Failed to fetch student report.');
+                console.error('Error fetching evaluations data:', err.message);
+                setError('Failed to load evaluations data.');
                 setLoading(false);
             });
     }, []);
@@ -28,19 +36,29 @@ function StudentReport() {
     if (error) return <p>{error}</p>;
 
     return (
-        <div className="student-report-container">
+        <div className="student-report-page">
             <h1>Student Report</h1>
+
+            <p>
+                A total of {totalEvaluations} evaluations were submitted for you.
+            </p>
+            <p>
+                Your <strong>average</strong> score was <strong>{Math.round(averageScore * 100) / 100} out of 5</strong>.
+            </p>
+
             <img src={rubric} alt="rubric" className="rubric" />
-            {reportData ? (
+
+            {feedback.length > 0 ? (
                 <div>
-                    <h2>Report Details</h2>
-                    <p><strong>Name:</strong> {reportData.name}</p>
-                    <p><strong>Course:</strong> {reportData.course}</p>
-                    <p><strong>Average Rating:</strong> {Math.round(reportData.avg_rating * 100) / 100}</p>
-                    <p><strong>Total Evaluations:</strong> {reportData.total_evaluations}</p>
+                    <h3>Anonymous Written Feedback:</h3>
+                    <ul>
+                        {feedback.map((comment, index) => (
+                            <li key={index}>{comment}</li>
+                        ))}
+                    </ul>
                 </div>
             ) : (
-                <p>No report data available.</p>
+                <p>No feedback.</p>
             )}
         </div>
     );

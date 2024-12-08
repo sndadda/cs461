@@ -393,31 +393,37 @@ app.listen(port, hostname, () => {
 });
 
 app.get('/api/student-report', verifyAuthentication, async (req, res) => {
-  const userId = req.user.id;
-  
   try {
-      const query = `
-          SELECT 
-              s.first_name || ' ' || s.last_name AS name,
-              c.course_name AS course,
-              AVG((e.rating1 + e.rating2 + e.rating3) / 3.0) AS avg_rating,
-              COUNT(*) AS total_evaluations
-          FROM Evaluation_Table e
-          JOIN Course c ON e.course_num = c.course_num
-          JOIN Student s ON e.person_evaluated = s.stud_id
-          WHERE e.person_evaluated = $1
-          GROUP BY s.first_name, s.last_name, c.course_name
+      // Fetch detailed evaluations
+      const detailedQuery = `
+          SELECT rating1, rating2, rating3, eval_par
+          FROM Evaluation_Table
+          WHERE person_evaluated = $1
       `;
-      
-      const result = await pool.query(query, [userId]);
+      const detailedResult = await pool.query(detailedQuery, [req.user.id]);
 
-      if (result.rows.length > 0) {
-          res.json(result.rows[0]);
-      } else {
-          res.status(404).json({ success: false, message: 'No report data found.' });
-      }
+      // Fetch aggregate data: average score and feedback
+      const aggregateQuery = `
+          SELECT AVG((rating1 + rating2 + rating3) / 3.0) AS avg_score,
+                 ARRAY_AGG(eval_par) AS feedbacks
+          FROM Evaluation_Table
+          WHERE person_evaluated = $1
+      `;
+      const aggregateResult = await pool.query(aggregateQuery, [req.user.id]);
+
+      // Combine results
+      const evaluations = detailedResult.rows || [];
+      const avgScore = aggregateResult.rows[0]?.avg_score || 0.0;
+      const feedbacks = aggregateResult.rows[0]?.feedbacks || [];
+
+      // Return the combined data
+      res.json({
+          evaluations,
+          averageScore: avgScore,
+          feedback: feedbacks
+      });
   } catch (error) {
-      console.error('Error fetching student report data:', error.message);
-      res.status(500).json({ success: false, message: 'Server error while fetching report data.' });
+      console.error('Error fetching student report:', error.message);
+      res.status(500).json({ success: false, message: 'Error fetching student report.' });
   }
 });
