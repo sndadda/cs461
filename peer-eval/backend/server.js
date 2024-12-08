@@ -391,3 +391,33 @@ app.get('/api/team-size', async (req, res) => {
 app.listen(port, hostname, () => {
   console.log(`Server is running on http://${hostname}:${port}`);
 });
+
+app.get('/api/student-report', verifyAuthentication, async (req, res) => {
+  const userId = req.user.id;
+  
+  try {
+      const query = `
+          SELECT 
+              s.first_name || ' ' || s.last_name AS name,
+              c.course_name AS course,
+              AVG((e.rating1 + e.rating2 + e.rating3) / 3.0) AS avg_rating,
+              COUNT(*) AS total_evaluations
+          FROM Evaluation_Table e
+          JOIN Course c ON e.course_num = c.course_num
+          JOIN Student s ON e.person_evaluated = s.stud_id
+          WHERE e.person_evaluated = $1
+          GROUP BY s.first_name, s.last_name, c.course_name
+      `;
+      
+      const result = await pool.query(query, [userId]);
+
+      if (result.rows.length > 0) {
+          res.json(result.rows[0]);
+      } else {
+          res.status(404).json({ success: false, message: 'No report data found.' });
+      }
+  } catch (error) {
+      console.error('Error fetching student report data:', error.message);
+      res.status(500).json({ success: false, message: 'Server error while fetching report data.' });
+  }
+});
