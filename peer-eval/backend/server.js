@@ -291,10 +291,13 @@ app.post('/api/create-survey', verifyAuthentication, async (req, res) => {
 });
 
 
-app.get('/api/courses', async (req, res) => {
+app.get('/api/professor-courses', verifyAuthentication, async (req, res) => {
+  const userId = req.user.id;
+
   try {
     const result = await pool.query(
-      'SELECT * FROM COURSE'
+      'SELECT * FROM COURSE WHERE prof_id = $1',
+      [userId]
     );
 
     if (result.rows.length === 0) {
