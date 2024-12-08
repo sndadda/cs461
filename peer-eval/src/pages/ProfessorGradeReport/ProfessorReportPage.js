@@ -29,7 +29,9 @@ function ProfessorReport() {
     };
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/courses')
+        axios.get('http://localhost:5000/api/professor-courses', {
+            withCredentials: true
+        })
         .then(response => {
             const { courses } = response.data;
 
