@@ -39,7 +39,7 @@ We then have to install all the necessary dependencies by running the following 
 npm i
 ```
 
-### 2. Setup Database
+### 3. Setup Database
 Connect to your PostgreSQL from the terminal using your username and password:
 ```bash
 psql -U <postgres-username>
