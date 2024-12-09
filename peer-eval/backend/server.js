@@ -409,7 +409,7 @@ app.get('/api/team-size', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT COUNT(DISTINCT t.stud_id) AS team_size
-      FROM Group_Members t
+      FROM Teammates t
       JOIN Project p ON t.proj_id = p.proj_id
       JOIN Course c ON p.course_num = c.course_num
       WHERE c.course_num = $1
@@ -454,12 +454,12 @@ app.get('/api/teammates/:proj_id', verifyAuthentication, async (req, res) => {
   try {
     const query = `
     SELECT S.stud_id, S.first_name, S.last_name
-    FROM Group_Members G
+    FROM Teammates G
     JOIN Student S ON G.stud_id = S.stud_id
     WHERE G.proj_id = $1
       AND G.team_id = (
         SELECT team_id
-        FROM Group_Members
+        FROM Teammates
         WHERE proj_id = $1 AND stud_id = $2
       )
       AND NOT EXISTS (
