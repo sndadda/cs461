@@ -192,7 +192,6 @@ app.post('/api/signup', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
 
     const userInsertQuery = `
             INSERT INTO Portal_User (username, pass, final_role)
@@ -282,6 +281,11 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('userId');
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
 app.post('/api/create-survey', verifyAuthentication, async (req, res) => {
   const { course_num, survey_name } = req.body;
 
@@ -310,6 +314,117 @@ app.post('/api/create-survey', verifyAuthentication, async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: 'Server error while creating survey.' });
+  }
+});
+
+app.get('/api/professor-courses', verifyAuthentication, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const result = await pool.query('SELECT * FROM COURSE WHERE prof_id = $1', [
+      userId,
+    ]);
+
+    if (result.rows.length === 0) {
+      console.log('No courses found');
+    }
+
+    res.json({ courses: result.rows });
+  } catch (error) {
+    console.error('Error fetching course information', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.',
+    });
+  }
+});
+
+app.get('/api/students-in-course', async (req, res) => {
+  const { course_num, course_term, course_year } = req.query;
+
+  console.log('query:', course_num, course_term, course_year);
+
+  try {
+    const result = await pool.query(
+      `SELECT s.stud_id, s.first_name, s.last_name
+      FROM Student s
+      JOIN Enrollment e ON s.stud_id = e.stud_id
+      JOIN Course c ON e.course_num = c.course_num
+      WHERE c.course_num = $1
+      AND c.course_term = $2
+      AND c.course_year = $3`,
+      [course_num, course_term, course_year]
+    );
+
+    console.log('result:', result.rows);
+
+    if (result.rows.length === 0) {
+      console.log('No students found');
+    }
+
+    res.json({ students: result.rows });
+  } catch (error) {
+    console.error('Error fetching student information', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.',
+    });
+  }
+});
+
+app.get('/api/student-evaluations', async (req, res) => {
+  const { course_num, course_term, course_year } = req.query;
+
+  try {
+    const result = await pool.query(
+      `SELECT 
+      evaluator_id, 
+      COUNT(*) AS total_evaluations,
+      SUM(CASE WHEN evaluator_id = person_evaluated THEN 1 ELSE 0 END) AS self_evaluations,
+      AVG(rating / 3.0) AS avg_rating
+      FROM Evaluation_Table e
+      JOIN Course c ON e.course_num = c.course_num
+      WHERE c.course_num = $1
+      AND c.course_term = $2
+      AND c.course_year = $3
+      GROUP BY evaluator_id`,
+      [course_num, course_term, course_year]
+    );
+
+    console.log('result:', result.rows);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching evaluation data', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.',
+    });
+  }
+});
+
+app.get('/api/team-size', async (req, res) => {
+  const { course_num, course_term, course_year } = req.query;
+
+  try {
+    const result = await pool.query(
+      `SELECT COUNT(DISTINCT t.stud_id) AS team_size
+      FROM Group_Members t
+      JOIN Project p ON t.proj_id = p.proj_id
+      JOIN Course c ON p.course_num = c.course_num
+      WHERE c.course_num = $1
+      AND c.course_term = $2
+      AND c.course_year = $3`,
+      [course_num, course_term, course_year]
+    );
+
+    res.json({ team_size: result.rows[0].team_size });
+  } catch (error) {
+    console.error('Error fetching team size', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.',
+    });
   }
 });
 
@@ -397,14 +512,9 @@ app.post('/api/submit-evaluation', verifyAuthentication, async (req, res) => {
     console.error('Error saving evaluation:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while sumbmitting evaluation.',
+      message: 'Server error while submitting evaluation.',
     });
   }
-});
-
-app.post('/api/logout', (req, res) => {
-  res.clearCookie('userId');
-  res.json({ success: true, message: 'Logged out successfully' });
 });
 
 app.listen(port, hostname, () => {
