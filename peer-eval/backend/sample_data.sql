@@ -18,9 +18,9 @@ INSERT INTO Default_Form (course_num, survey_name) VALUES
 ('CS101', 'CS101 Evaluation Form'),
 ('MATH101', 'MATH101 Evaluation Form');
 
-INSERT INTO Evaluation_Table (evaluator_id, person_evaluated, form_id, rating1, rating2, rating3, course_num, eval_par) VALUES
-(1, 1, 1, 3, 2, 1, 'CS101', 'Great team member, helped in group discussions.'),
-(2, 2, 1, 3, 2, 1, 'CS101', 'Collaborated well, but could improve in technical skills.');
+INSERT INTO Evaluation_Table (evaluator_id, person_evaluated, rating, course_num, eval_par) VALUES
+(1, 1, 6, 'CS101', 'Great team member, helped in group discussions.'),
+(2, 2, 6, 'CS101', 'Collaborated well, but could improve in technical skills.');
 
 INSERT INTO Project (proj_id, course_num, proj_name) VALUES
 (1, 'CS101', 'Final Project'),

@@ -517,6 +517,44 @@ app.post('/api/submit-evaluation', verifyAuthentication, async (req, res) => {
   }
 });
 
+app.get('/api/student-report', verifyAuthentication, async (req, res) => {
+  try {
+    // Fetch detailed evaluations
+    const detailedQuery = `
+          SELECT rating, eval_par
+          FROM Evaluation_Table
+          WHERE person_evaluated = $1
+      `;
+    const detailedResult = await pool.query(detailedQuery, [req.user.id]);
+
+    // Fetch aggregate data: average score and feedback
+    const aggregateQuery = `
+          SELECT AVG(rating / 3.0) AS avg_score,
+                 ARRAY_AGG(eval_par) AS feedbacks
+          FROM Evaluation_Table
+          WHERE person_evaluated = $1
+      `;
+    const aggregateResult = await pool.query(aggregateQuery, [req.user.id]);
+
+    // Combine results
+    const evaluations = detailedResult.rows || [];
+    const avgScore = aggregateResult.rows[0]?.avg_score || 0.0;
+    const feedbacks = aggregateResult.rows[0]?.feedbacks || [];
+
+    // Return the combined data
+    res.json({
+      evaluations,
+      averageScore: avgScore,
+      feedback: feedbacks,
+    });
+  } catch (error) {
+    console.error('Error fetching student report:', error.message);
+    res
+      .status(500)
+      .json({ success: false, message: 'Error fetching student report.' });
+  }
+});
+
 app.listen(port, hostname, () => {
   console.log(`Server is running on http://${hostname}:${port}`);
 });
