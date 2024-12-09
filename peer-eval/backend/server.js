@@ -430,3 +430,25 @@ app.get('/api/student-report', verifyAuthentication, async (req, res) => {
       res.status(500).json({ success: false, message: 'Error fetching student report.' });
   }
 });
+
+router.get('/students', async (req, res) => {
+  const { course_num } = req.query;
+
+  if (!course_num) {
+      return res.status(400).json({ success: false, message: 'Course number is required' });
+  }
+
+  try {
+      const query = `
+          SELECT s.stud_id, s.first_name, s.last_name
+          FROM Student s
+          JOIN Enrollment e ON s.stud_id = e.stud_id
+          WHERE e.course_num = $1
+      `;
+      const result = await pool.query(query, [course_num]);
+      res.status(200).json({ success: true, students: result.rows });
+  } catch (error) {
+      console.error('Error fetching students:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
