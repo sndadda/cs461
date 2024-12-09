@@ -1,7 +1,7 @@
 INSERT INTO Portal_User (username, pass, final_role) VALUES
-('student1', 'password123', 'student'),
-('student2', 'password123', 'student'),
-('professor1', 'password123', 'professor');
+('student1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
+('student2@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
+('professor1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'professor');
 
 INSERT INTO Student (stud_id, first_name, last_name) VALUES
 (1, 'John', 'Doe'),
