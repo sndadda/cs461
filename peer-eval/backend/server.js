@@ -381,7 +381,7 @@ app.get('/api/student-evaluations', async (req, res) => {
       evaluator_id, 
       COUNT(*) AS total_evaluations,
       SUM(CASE WHEN evaluator_id = person_evaluated THEN 1 ELSE 0 END) AS self_evaluations,
-      AVG(rating / 3.0) AS avg_rating
+      AVG(rating) AS avg_rating
       FROM Evaluation_Table e
       JOIN Course c ON e.course_num = c.course_num
       WHERE c.course_num = $1
@@ -457,18 +457,14 @@ app.get('/api/teammates/:proj_id', verifyAuthentication, async (req, res) => {
     FROM Teammates G
     JOIN Student S ON G.stud_id = S.stud_id
     WHERE G.proj_id = $1
-      AND G.team_id = (
-        SELECT team_id
-        FROM Teammates
-        WHERE proj_id = $1 AND stud_id = $2
-      )
+      AND G.stud_id != $2
       AND NOT EXISTS (
         SELECT 1
         FROM Evaluation_Table E
         WHERE E.evaluator_id = $2
           AND E.person_evaluated = G.stud_id
       );
-            `;
+    `;
     const result = await pool.query(query, [proj_id, userId]);
     res.json({ success: true, teammates: result.rows });
   } catch (error) {
@@ -529,7 +525,7 @@ app.get('/api/student-report', verifyAuthentication, async (req, res) => {
 
     // Fetch aggregate data: average score and feedback
     const aggregateQuery = `
-          SELECT AVG(rating / 3.0) AS avg_score,
+          SELECT AVG(rating) AS avg_score,
                  ARRAY_AGG(eval_par) AS feedbacks
           FROM Evaluation_Table
           WHERE person_evaluated = $1
