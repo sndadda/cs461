@@ -8,6 +8,9 @@ import ProtectedRoute from './PrivateRoute.js';
 import ProfessorCourses from './pages/ProfessorCourses/ProfessorCoursesPage.js';
 import Navbar from './components/Sidebar/Navbar.js';
 import StudentSurvey from './pages/StudentSurvey/StudentSurveyPage.js';
+import CreateCourse from './pages/CreateCourse/CreateCoursePage.js';
+import CreateTeam from './pages/CreateTeam/CreateTeamPage.js';
+import CreateProject from './pages/CreateProject/CreateProjectPage.js';
 
 export const AppRoutes = () => {
     const [user, setUser] = useState(null);
@@ -68,7 +71,7 @@ export const AppRoutes = () => {
                         element={
                             <ProtectedRoute
                                 component={ProfessorCourses}
-                                allowedRoles={'professor'}
+                                allowedRoles={['professor']}
                                 user={user}
                             />
                         }
@@ -84,6 +87,36 @@ export const AppRoutes = () => {
                         }
                     />
                     <Route
+                        path="/createProject"
+                        element={
+                            <ProtectedRoute
+                                component={CreateProject}
+                                allowedRoles={['professor']}
+                                user={user}
+                            />
+                        }
+                    />
+                    <Route
+                        path="/createCourse"
+                        element={
+                            <ProtectedRoute
+                                component={CreateCourse}
+                                allowedRoles={['professor']}
+                                user={user}
+                            />
+                        }
+                    />
+                    <Route
+                        path="/createTeam"
+                        element={
+                            <ProtectedRoute
+                                component={CreateTeam}
+                                allowedRoles={['professor']}
+                                user={user}
+                            />
+                        }
+                    />
+                    <Route
                         path="*"
                         element={<Navigate to={user.role === 'student' ? '/studentReport' : '/professorReport'} />}
                     />
@@ -91,6 +124,5 @@ export const AppRoutes = () => {
             )}
             </Routes>
         </Router>
-
     );
 };
