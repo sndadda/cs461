@@ -1,7 +1,7 @@
 INSERT INTO Portal_User (username, pass, final_role) VALUES
-('student1', 'password123', 'student'),
-('student2', 'password123', 'student'),
-('professor1', 'password123', 'professor');
+('student1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
+('student2@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
+('professor1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'professor');
 
 INSERT INTO Student (stud_id, first_name, last_name) VALUES
 (1, 'John', 'Doe'),
@@ -18,9 +18,9 @@ INSERT INTO Default_Form (course_num, survey_name) VALUES
 ('CS101', 'CS101 Evaluation Form'),
 ('MATH101', 'MATH101 Evaluation Form');
 
-INSERT INTO Evaluation_Table (evaluator_id, person_evaluated, form_id, rating1, rating2, rating3, course_num, eval_par) VALUES
-(1, 1, 1, 3, 2, 1, 'CS101', 'Great team member, helped in group discussions.'),
-(2, 2, 1, 3, 2, 1, 'CS101', 'Collaborated well, but could improve in technical skills.');
+INSERT INTO Evaluation_Table (evaluator_id, person_evaluated, rating, course_num, eval_par) VALUES
+(1, 1, 6, 'CS101', 'Great team member, helped in group discussions.'),
+(2, 2, 6, 'CS101', 'Collaborated well, but could improve in technical skills.');
 
 INSERT INTO Project (proj_id, course_num, proj_name) VALUES
 (1, 'CS101', 'Final Project'),
