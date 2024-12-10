@@ -39,7 +39,28 @@ We then have to install all the necessary dependencies by running the following 
 npm i
 ```
 
-### 3. Setup Environment Variables
+### 3. Setup Database
+Connect to your PostgreSQL from the terminal using your username and password:
+```bash
+psql -U <postgres-username>
+```
+
+Create a database for the project:
+```sql
+CREATE DATABASE <db-name>;
+```
+
+In a seperate terminal, run the following command to execute the setup.sql script:
+```bash
+psql -U <postgres-username> -d "db-name" -f "path to setup.sql"
+```
+
+Example command:
+```bash
+psql -U postgres -d "studenteval" -f "C:\Users\John Doe\Documents\cs461\peer-eval\backend\setup.sql"
+```
+
+### 4. Setup Environment Variables
 Create a `env.json` file inside the backend folder with the following information:
 
 This can be found in the `env_template.json` file inside the backend folder
@@ -53,7 +74,7 @@ This can be found in the `env_template.json` file inside the backend folder
 }
 ```
 
-### 4. Start the Frontend Server
+### 5. Start the Frontend Server
 Open a terminal and navigate to the `peer-eval` folder of the project using the following command:
 ```bash
 cd <your-project-directory>/peer-eval
@@ -66,7 +87,7 @@ npm start
 
 Now, the development server should be running. We then have to start the backend server.
 
-### 5. Start Backend Server
+### 6. Start Backend Server
 Open a new terminal and navigate to the `backend` folder of the project using the following command:
 ```bash
 cd <your-project-directory>/peer-eval/backend
