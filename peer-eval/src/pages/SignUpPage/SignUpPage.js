@@ -30,13 +30,15 @@ const SignUp = ({ setUser }) => {
             if (signupResponse.data.success) {
                 const user = signupResponse.data.user;
                 localStorage.setItem('user', JSON.stringify(user));
-                setUser(user); // set user state immediately to make them logged in
+                // setUser(user); // set user state immediately to make them logged in
 
-                if (user.role === 'student') {
-                    navigate('/studentReport');
-                } else if (user.role === 'professor') {
-                    navigate('/professorReport');
-                }
+                navigate('/login');
+
+                // if (user.role === 'student') {
+                //     navigate('/studentReport');
+                // } else if (user.role === 'professor') {
+                //     navigate('/professorReport');
+                // }
             } else {
                 setErrorMessage(signupResponse.data.message || 'Signup failed.');
             }
