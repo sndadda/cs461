@@ -637,6 +637,22 @@ app.get('/api/students/:courseNum', async (req, res) => {
   }
 });
 
+app.post('/api/add-project', async (req, res) => {
+  const { proj_id, course_num, proj_name } = req.body;
+  try {
+    const result = await pool.query(`INSERT INTO Project (proj_id, course_num, proj_name) VALUES ($1, $2, $3)`,
+      [proj_id, course_num, proj_name]
+    );
+
+    console.log("results: ", result.rows);
+    
+    res.json({ success: true, projects: result.rows });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 app.listen(port, hostname, () => {
   console.log(`Server is running on http://${hostname}:${port}`);
 });

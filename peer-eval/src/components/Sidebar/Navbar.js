@@ -18,6 +18,7 @@ const Navbar = ({ user, onLogout }) => {
                         <Link to="/professorReport" className="nav-item">Report</Link>
                         <Link to="/professorCourses" className="nav-item">Survey Creation</Link>
                         <Link to="/createCourse" className="nav-item">Create Course</Link>
+                        <Link to="/createProject" className="nav-item">Create Project</Link>
                         <Link to="/createTeam" className="nav-item">Create Team</Link>
                     </>
                 )}
