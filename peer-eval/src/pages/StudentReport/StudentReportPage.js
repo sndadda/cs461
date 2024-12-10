@@ -43,7 +43,7 @@ function StudentReport() {
                 A total of {totalEvaluations} evaluations were submitted for you.
             </p>
             <p>
-                Your <strong>average</strong> score was <strong>{Math.round(averageScore * 100) / 100} out of 5</strong>.
+                Your <strong>average</strong> score was <strong>{Math.round(averageScore * 100) / 100}</strong>.
             </p>
 
             <img src={rubric} alt="rubric" className="rubric" />
