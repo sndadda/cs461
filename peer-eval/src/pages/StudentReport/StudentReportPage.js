@@ -40,12 +40,12 @@ function StudentReport() {
     <div className="student-report-page">
       <h1>Student Report</h1>
 
-      <p>A total of {totalEvaluations} evaluations were submitted for you.</p>
-      <p>
-        Your <strong>average</strong> score was{' '}
-        <strong>{Math.round(averageScore * 100) / 100} </strong> out of 4.
-      </p>
-
+            <p>
+                A total of {totalEvaluations} evaluations were submitted for you.
+            </p>
+            <p>
+                Your <strong>average</strong> score was <strong>{Math.round(averageScore * 100) / 100}</strong>.
+            </p>
       <img src={rubric} alt="rubric" className="rubric" />
 
       {feedback.length > 0 ? (

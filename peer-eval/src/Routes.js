@@ -10,6 +10,8 @@ import Navbar from './components/Sidebar/Navbar.js';
 import StudentSurvey from './pages/StudentSurvey/StudentSurveyPage.js';
 import CreateCourse from './pages/CreateCourse/CreateCoursePage.js';
 import CreateTeam from './pages/CreateTeam/CreateTeamPage.js';
+import CreateProject from './pages/CreateProject/CreateProjectPage.js';
+
 export const AppRoutes = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -79,6 +81,16 @@ export const AppRoutes = () => {
                         element={
                             <ProtectedRoute
                                 component={ProfessorReport}
+                                allowedRoles={['professor']}
+                                user={user}
+                            />
+                        }
+                    />
+                    <Route
+                        path="/createProject"
+                        element={
+                            <ProtectedRoute
+                                component={CreateProject}
                                 allowedRoles={['professor']}
                                 user={user}
                             />

@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS Evaluation_Table (
 
 
 CREATE TABLE IF NOT EXISTS Project (
-    proj_id     INT PRIMARY KEY,
+    proj_id     SERIAL PRIMARY KEY,
     course_num  VARCHAR(10),
     proj_name   VARCHAR(32),
     FOREIGN KEY (course_num) REFERENCES Course (course_num)

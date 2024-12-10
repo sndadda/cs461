@@ -214,6 +214,8 @@ app.post('/api/signup', async (req, res) => {
         `;
     await pool.query(detailsInsertQuery, [user.id, firstName, lastName]);
 
+    res.cookie('userId', user.id, { httpOnly: true, sameSite: 'strict' });
+
     res.json({
       success: true,
       message: 'User registered successfully.',
@@ -633,6 +635,20 @@ app.get('/api/students/:courseNum', async (req, res) => {
       res.status(200).json({ success: true, students: result.rows });
   } catch (error) {
       console.error('Error fetching students:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.post('/api/add-project', async (req, res) => {
+  const { course_num, proj_name } = req.body;
+  try {
+    const result = await pool.query(`INSERT INTO Project (course_num, proj_name) VALUES ($1, $2)`,
+      [course_num, proj_name]
+    );
+    
+    res.json({ success: true, projects: result.rows });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
       res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
