@@ -1,3 +1,4 @@
+--all passwords are 'password123'
 INSERT INTO Portal_User (username, pass, final_role) VALUES
 ('professor1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'professor'),
 ('student1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
