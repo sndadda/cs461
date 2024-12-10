@@ -214,6 +214,8 @@ app.post('/api/signup', async (req, res) => {
         `;
     await pool.query(detailsInsertQuery, [user.id, firstName, lastName]);
 
+    res.cookie('userId', user.id, { httpOnly: true, sameSite: 'strict' });
+
     res.json({
       success: true,
       message: 'User registered successfully.',
