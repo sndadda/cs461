@@ -1,13 +1,15 @@
 --all passwords are 'password123'
-INSERT INTO Portal_User (username, pass, final_role) VALUES
-('professor1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'professor'),
-('student1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
-('student2@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student');
+INSERT INTO Portal_User (id,username, pass, final_role) VALUES
+(1,'professor1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'professor'),
+(2,'student1@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
+(3,'student2@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student'),
+(4,'student3@drexel.edu', '$2a$10$4hD0WMAi1i7OMRClNJFHneLhVvMMvFW.TWwkNwSUJSF/G80w.60ES', 'student');
 
 
 INSERT INTO Student (stud_id, first_name, last_name) VALUES
-(1, 'John', 'Doe'),
-(2, 'Jane', 'Smith');
+(2, 'John', 'Doe'),
+(3, 'Jane', 'Smith'),
+(4, 'Carol', 'Gyan');
 
 INSERT INTO Professor (prof_id, first_name, last_name) VALUES
 (1, 'Dr. Alan', 'Turing');
@@ -22,6 +24,8 @@ INSERT INTO Default_Form (course_num, survey_name) VALUES
 
 INSERT INTO Evaluation_Table (evaluator_id, person_evaluated, rating, course_num, eval_par) VALUES
 (2, 2, 3, 'CS101', 'Great team member, helped in group discussions.'),
+(2, 3, 3, 'CS101', 'Great team member, helped in group discussions.'),
+(2, 4, 3, 'CS101', 'Great team member, helped in group discussions.'),
 (3, 3, 4, 'CS101', 'Collaborated well, but could improve in technical skills.');
 
 INSERT INTO Project (proj_id, course_num, proj_name) VALUES
@@ -43,5 +47,7 @@ INSERT INTO Grades (prof_id, course_num, stud_id, grade) VALUES
 INSERT INTO Enrollment (course_num, stud_id) VALUES
 ('CS101', 2),
 ('CS101', 3),
+('CS101', 4),
 ('MATH101', 2),
 ('MATH101', 3);
+
