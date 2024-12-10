@@ -3,9 +3,7 @@ import axios from 'axios';
 
 function CreateProject() {
     const [formData, setFormData] = useState({
-        courseNum: '',
-        courseTerm: '',
-        courseYear: ''
+        courseNum: ''
     });
 
     const [courseData, setCourseData] = useState({
@@ -37,26 +35,30 @@ function CreateProject() {
         .catch(error => {
             console.error('Error fetching course data', error);
         });
-    })
+    }, []);
 
     const handleCreateProject = async () => {
-        if (!projectName) {
+        if (!projectName || !formData.courseNum) {
             alert('Please fill in all fields!');
             return;
         }
 
         try {
-            const response = await axios.post('http://localhost:5000/api/add-project',
-                {
-                    project_name: projectName,
-                    course_num: course
-                },
-            );
+            const response = await axios.post('http://localhost:5000/api/add-project', {
+                project_name: projectName,
+                course_num: formData.courseNum,
+            });
+
+            if (response.data.success) {
+                alert('Team created successfully!');
+              } else {
+                alert('Failed to create team.');
+              }
         } catch (error) {
             console.error('Error creating project:', error);
             alert('An error occurred. Please try again.');
         }
-    }
+    };
 
     const handleChange = (e) => {
         setFormData({
@@ -78,16 +80,21 @@ function CreateProject() {
                 placeholder="Enter project name"
             />
 
-            <select name="courseNum" value={courseData.course_num} onChange={handleChange}>
+            <label htmlFor="courseNum">Select Course Number:</label>
+            <select
+                name="courseNum"
+                value={formData.courseNum}
+                onChange={handleChange}
+            >
                 <option value="">Select Course Number</option>
-                {courseData.course_num.map((course, index) => (
+                {courseData.courseNum.map((course, index) => (
                     <option key={index} value={course}>{course}</option>
                 ))}
             </select>
 
             <button onClick={handleCreateProject}>Create Project</button>
         </div>
-    )
+    );
 }
 
 export default CreateProject;
