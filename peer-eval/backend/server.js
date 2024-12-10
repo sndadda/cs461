@@ -397,7 +397,6 @@ app.listen(port, hostname, () => {
 
 app.get('/api/student-report', verifyAuthentication, async (req, res) => {
   try {
-      // Fetch detailed evaluations
       const detailedQuery = `
           SELECT rating1, rating2, rating3, eval_par
           FROM Evaluation_Table
@@ -405,7 +404,6 @@ app.get('/api/student-report', verifyAuthentication, async (req, res) => {
       `;
       const detailedResult = await pool.query(detailedQuery, [req.user.id]);
 
-      // Fetch aggregate data: average score and feedback
       const aggregateQuery = `
           SELECT AVG((rating1 + rating2 + rating3) / 3.0) AS avg_score,
                  ARRAY_AGG(eval_par) AS feedbacks
@@ -414,12 +412,10 @@ app.get('/api/student-report', verifyAuthentication, async (req, res) => {
       `;
       const aggregateResult = await pool.query(aggregateQuery, [req.user.id]);
 
-      // Combine results
       const evaluations = detailedResult.rows || [];
       const avgScore = aggregateResult.rows[0]?.avg_score || 0.0;
       const feedbacks = aggregateResult.rows[0]?.feedbacks || [];
 
-      // Return the combined data
       res.json({
           evaluations,
           averageScore: avgScore,
@@ -431,10 +427,75 @@ app.get('/api/student-report', verifyAuthentication, async (req, res) => {
   }
 });
 
-router.get('/students', async (req, res) => {
-  const { course_num } = req.query;
+app.get('/api/professors', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM Professor');
 
-  if (!course_num) {
+    console.log("results: ", result.rows);
+    
+    res.json({ success: true, professors: result.rows });
+  } catch (error) {
+    console.error('Error fetching professors:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.post('/api/create-course', verifyAuthentication, async (req, res) => {
+  const { course_name, course_num, course_term, course_year, prof_id } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO Course (course_name, course_num, course_term, course_year, prof_id) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [course_name, course_num, course_term, course_year, prof_id]
+    );
+  
+    console.log("results: ", result.rows[0]);
+  
+    res.json({ success: true, course: result.rows[0] });
+  } catch (error) {
+    console.error('Error creating course:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.get('/api/projects', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM Project');
+
+    console.log("results: ", result.rows);
+    
+    res.json({ success: true, projects: result.rows });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.post('/api/create-team', async (req, res) => {
+  const { proj_id, members } = req.body;
+
+  try {
+    for (let i = 0; i < members.length; i++) {
+      const memberId = members[i];
+
+      await pool.query(
+        'INSERT INTO Teammates (proj_id, stud_id) VALUES ($1, $2)',
+        [proj_id, memberId]
+      );
+    }
+
+    console.log("Team created successfully for project:", proj_id);
+    res.json({ success: true, message: 'Team created successfully!' });
+  } catch (error) {
+    console.error('Error creating team:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.get('/api/students/:courseNum', async (req, res) => {
+  const { courseNum } = req.params;
+
+  if (!courseNum) {
       return res.status(400).json({ success: false, message: 'Course number is required' });
   }
 
@@ -445,7 +506,10 @@ router.get('/students', async (req, res) => {
           JOIN Enrollment e ON s.stud_id = e.stud_id
           WHERE e.course_num = $1
       `;
-      const result = await pool.query(query, [course_num]);
+      const result = await pool.query(query, [courseNum]);
+
+      console.log('Fetched students:', result.rows);
+
       res.status(200).json({ success: true, students: result.rows });
   } catch (error) {
       console.error('Error fetching students:', error);

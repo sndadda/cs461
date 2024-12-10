@@ -31,23 +31,30 @@ function CreateTeam() {
             }
         }
 
-        // Fetch students enrolled in the selected project
+        fetchProjects();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedProject) return;
+        
         async function fetchStudents(courseNum) {
-            if (!courseNum) return;  // Avoid fetching if no course is selected
+            if (!courseNum) return;
+        
+            console.log('Fetching students for course:', courseNum);
 
             try {
-                const response = await fetch(`http://localhost:5000/api/students?course_num=${courseNum}`, {
+                const response = await fetch(`http://localhost:5000/api/students/${courseNum}`, {
                     method: 'GET',
                     credentials: 'include',
                 });
-
+    
                 if (!response.ok) {
                     throw new Error('Failed to fetch students');
                 }
-
+    
                 const data = await response.json();
                 if (data.success) {
-                    setStudents(data.students); // Set students based on selected course
+                    setStudents(data.students);
                 } else {
                     console.error('Failed to fetch students:', data.message);
                 }
@@ -55,53 +62,46 @@ function CreateTeam() {
                 console.error('Error fetching students:', error);
             }
         }
-
-        fetchProjects();
-
-        // Fetch students when a project is selected
-        if (selectedProject) {
-            const selectedProjectData = projects.find((proj) => proj.proj_id === selectedProject);
-            if (selectedProjectData) {
-                fetchStudents(selectedProjectData.course_num); // Fetch students for the course of the selected project
-            }
+    
+        const selectedProjectData = projects.find((proj) => proj.proj_id === parseInt(selectedProject));
+        if (selectedProjectData) {
+            fetchStudents(selectedProjectData.course_num);
         }
-
-    }, [selectedProject, projects]); // Re-run when selectedProject or projects changes
+    }, [selectedProject, projects]);
 
     const handleCreateTeam = async () => {
-        if (!selectedProject || !teamName || selectedStudents.length === 0) {
-            alert('Please fill in all fields and select at least one student!');
-            return;
-        }
+  if (!selectedProject || selectedStudents.length === 0) {
+    alert('Please select a project and at least one student!');
+    return;
+  }
 
-        try {
-            const response = await axios.post(
-                'http://localhost:5000/api/create-team',
-                {
-                    proj_id: selectedProject,
-                    team_name: teamName,
-                    members: selectedStudents,
-                },
-                { withCredentials: true }
-            );
+  try {
+    const response = await axios.post(
+      'http://localhost:5000/api/create-team',
+      {
+        proj_id: selectedProject,
+        members: selectedStudents,
+      },
+      { withCredentials: true }
+    );
 
-            if (response.data.success) {
-                alert('Team created successfully!');
-            } else {
-                alert('Failed to create team.');
-            }
-        } catch (error) {
-            console.error('Error creating team:', error);
-            alert('An error occurred. Please try again.');
-        }
-    };
+    if (response.data.success) {
+      alert('Team created successfully!');
+    } else {
+      alert('Failed to create team.');
+    }
+  } catch (error) {
+    console.error('Error creating team:', error);
+    alert('An error occurred. Please try again.');
+  }
+};
 
     const handleStudentSelection = (event) => {
         const studentId = parseInt(event.target.value);
         setSelectedStudents((prev) =>
             prev.includes(studentId)
-                ? prev.filter((id) => id !== studentId) 
-                : [...prev, studentId] 
+                ? prev.filter((id) => id !== studentId)
+                : [...prev, studentId]
         );
     };
 
@@ -115,9 +115,7 @@ function CreateTeam() {
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
             >
-                <option value="" disabled>
-                    Select a project
-                </option>
+                <option value="" disabled>Select a project</option>
                 {projects.map((project) => (
                     <option key={project.proj_id} value={project.proj_id}>
                         {project.proj_name} ({project.course_num})
@@ -135,22 +133,22 @@ function CreateTeam() {
             />
 
             <label htmlFor="studentSelection">Select Students:</label>
-            <div id="studentSelection">
-                {students.map((student) => (
-                    <div key={student.stud_id}>
-                        <input
-                            type="checkbox"
-                            id={`student-${student.stud_id}`}
-                            value={student.stud_id}
-                            checked={selectedStudents.includes(student.stud_id)}
-                            onChange={handleStudentSelection}
-                        />
-                        <label htmlFor={`student-${student.stud_id}`}>
-                            {student.first_name} {student.last_name}
-                        </label>
-                    </div>
-                ))}
-            </div>
+                        <div id="studentSelection">
+                            {students.map((student) => (
+                                <div key={student.stud_id}>
+                                    <input
+                                        type="checkbox"
+                                        id={`student-${student.stud_id}`}
+                                        value={student.stud_id}
+                                        checked={selectedStudents.includes(student.stud_id)}
+                                        onChange={handleStudentSelection}
+                                    />
+                                    <label htmlFor={`student-${student.stud_id}`}>
+                                        {student.first_name} {student.last_name}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
 
             <button onClick={handleCreateTeam}>Create Team</button>
         </div>
