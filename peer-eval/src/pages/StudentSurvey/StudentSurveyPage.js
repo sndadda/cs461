@@ -174,11 +174,14 @@ function StudentSurvey() {
   const saveEvaluation = async (event) => {
     event.preventDefault();
 
-    const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+    const avgRating =
+      ratings.length > 0
+        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+        : 0;
 
     const evaluationData = {
       person_evaluated: selectedTeammate.stud_id,
-      rating: totalRating,
+      rating: avgRating,
       course_num: selectedCourse,
       eval_par: evalText,
     };
