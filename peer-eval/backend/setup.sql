@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS Default_Form (
     form_id SERIAL PRIMARY KEY,
     course_num  VARCHAR(10),
     survey_name VARCHAR(128),
-    question1   VARCHAR(255) DEFAULT 'Rate how they contribute to Team Meetings.',
-    question2   VARCHAR(255) DEFAULT 'Rate how they facilitate the Contributions of Team Members.',
-    question3   VARCHAR(255) DEFAULT 'Rate how they make Individual Contributions outside of Team Meetings.',
+    question1   VARCHAR(255) DEFAULT 'Rate how {member} contributes to Team Meetings.',
+    question2   VARCHAR(255) DEFAULT 'Rate how {member} facilitates the Contributions of Team Members.',
+    question3   VARCHAR(255) DEFAULT 'Rate how {member} makes Individual Contributions outside of Team Meetings.',
     eval_par    VARCHAR(255) DEFAULT 'Add any additional comments about the team member.',
     FOREIGN KEY (course_num) REFERENCES Course (course_num)
 );
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS Default_Form (
 CREATE TABLE IF NOT EXISTS Evaluation_Table (
     evaluator_id        INT,
     person_evaluated    INT,
-    rating              INT,
+    rating              NUMERIC(5, 2),
     course_num          VARCHAR(10),
     eval_par            TEXT,
     PRIMARY KEY (evaluator_id, person_evaluated),
